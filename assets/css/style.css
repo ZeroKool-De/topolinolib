@@ -6796,3 +6796,92 @@ header nav ul li.notification-item > a:hover {
     font-size: 0.95rem;
     color: #343a40;
 }
+/* ================================================
+   SCROLL DESCRIZIONE PERSONAGGIO
+   ================================================ */
+
+/* Container per la descrizione con scroll */
+.character-description-scroll {
+    max-height: 300px; /* Altezza massima - puoi regolare */
+    overflow-y: auto;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin: 15px 0;
+    
+    /* Scrollbar personalizzata (per webkit browsers) */
+    scrollbar-width: thin;
+    scrollbar-color: #ccc #f0f0f0;
+}
+
+/* Scrollbar personalizzata per Chrome/Safari */
+.character-description-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.character-description-scroll::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.character-description-scroll::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.character-description-scroll::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* Stile del testo dentro lo scroll */
+.character-description-scroll p {
+    margin-bottom: 12px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.character-description-scroll p:last-child {
+    margin-bottom: 0;
+}
+
+/* Effetto fade in cima e in fondo per indicare più contenuto */
+.character-description-scroll::before {
+    content: '';
+    position: sticky;
+    top: 0;
+    height: 10px;
+    background: linear-gradient(to bottom, #f8f9fa, transparent);
+    display: block;
+    margin: -15px -15px 5px -15px;
+    z-index: 1;
+}
+
+.character-description-scroll::after {
+    content: '';
+    position: sticky;
+    bottom: 0;
+    height: 10px;
+    background: linear-gradient(to top, #f8f9fa, transparent);
+    display: block;
+    margin: 5px -15px -15px -15px;
+    z-index: 1;
+}
+
+/* Versione compatta per mobile */
+@media (max-width: 768px) {
+    .character-description-scroll {
+        max-height: 200px;
+        padding: 12px;
+        margin: 10px 0;
+    }
+}
+
+/* Variante senza bordi (se preferisci) */
+.character-description-scroll.borderless {
+    background: transparent;
+    border: none;
+    border-left: 3px solid #2c5aa0;
+    padding-left: 20px;
+}

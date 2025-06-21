@@ -214,7 +214,7 @@ require_once 'includes/header.php';
             </div>
             <h3>Albi con Gadget</h3>
             <p class="count"><?php echo number_format($total_comics_with_gadgets); ?></p>
-            <a href="<?php echo BASE_URL; ?>search.php?q=gadget" class="stat-link">Cerca Albi con Gadget &raquo;</a>
+            <a href="<?php echo BASE_URL; ?>search.php?with_gadget=1&submit_search=1" class="stat-link">Cerca Albi con Gadget &raquo;</a>
         </div>
     </div>
 

@@ -186,6 +186,54 @@ $stmt_app->close();
 require_once 'includes/header.php';
 ?>
 
+<!-- CSS Personalizzato per lo Scroll della Descrizione -->
+<style>
+/* Character Description Scroll Container */
+.character-description-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin: 15px 0;
+    line-height: 1.6;
+    
+    /* Scrollbar personalizzata */
+    scrollbar-width: thin;
+    scrollbar-color: #ccc #f0f0f0;
+}
+
+/* Scrollbar per Chrome/Safari */
+.character-description-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.character-description-scroll::-webkit-scrollbar-track {
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+.character-description-scroll::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.character-description-scroll::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+/* Responsive per mobile */
+@media (max-width: 768px) {
+    .character-description-scroll {
+        max-height: 200px;
+        padding: 15px;
+        margin: 10px 0;
+    }
+}
+</style>
+
 <div class="container page-content-container">
     <div class="character-detail-header">
         <?php if ($character['character_image']): ?>
@@ -196,7 +244,9 @@ require_once 'includes/header.php';
         <div class="character-info">
             <h1><?php echo htmlspecialchars($character['name']); ?></h1>
             <?php if (!empty($character['description'])): ?>
-                <p class="description"><?php echo nl2br(htmlspecialchars($character['description'])); ?></p>
+                <div class="character-description-scroll">
+                    <?php echo nl2br(htmlspecialchars($character['description'])); ?>
+                </div>
             <?php endif; ?>
             
             <?php if (!empty($creators)): ?>
@@ -437,4 +487,3 @@ document.addEventListener('DOMContentLoaded', function () {
 require_once 'includes/footer.php';
 $mysqli->close();
 ?>
-                

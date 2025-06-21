@@ -83,7 +83,7 @@ require_once 'includes/header.php';
                             <p class="comic-title">"<?php echo htmlspecialchars($comic_result['title']); ?>"</p>
                         <?php endif; ?>
                         <p class="publication-date">
-                            Data di pubblicazione: <strong><?php echo format_date_italian($comic_result['publication_date'], "d MMMM YYYY"); ?></strong>
+                            Data di pubblicazione: <strong><?php echo format_publication_date($comic_result['publication_date']); ?></strong>
                         </p>
                         <p class="date-difference">
                             <?php
@@ -93,7 +93,7 @@ require_once 'includes/header.php';
                                 $diff_days = (int)$diff->format('%a'); // Differenza assoluta in giorni
 
                                 if ($diff_days == 0) {
-                                    echo "Questo numero è uscito esattamente il " . format_date_italian($submitted_date, "d MMMM YYYY") . "!";
+                                    echo "Questo numero è uscito esattamente il " . format_publication_date($submitted_date) . "!";
                                 } else {
                                     $giorni_str = ($diff_days == 1) ? "giorno" : "giorni";
                                     $congiunzione = ($user_date_obj > $comic_date_obj ? 'prima della tua data' : 'dopo la tua data');
@@ -107,7 +107,7 @@ require_once 'includes/header.php';
             <?php else: ?>
                 <div class="no-result-message">
                     <h2>Nessun Risultato Trovato</h2>
-                    <p>Ci dispiace, ma non abbiamo trovato un numero di Topolino pubblicato esattamente nella data inserita (<?php echo format_date_italian($submitted_date, "d MMMM YYYY"); ?>) o nelle immediate vicinanze. È possibile che il catalogo per quell'anno debba ancora essere completato o che non siano uscite pubblicazioni in quella data specifica.</p>
+                    <p>Ci dispiace, ma non abbiamo trovato un numero di Topolino pubblicato esattamente nella data inserita (<?php echo format_publication_date($submitted_date); ?>) o nelle immediate vicinanze. È possibile che il catalogo per quell'anno debba ancora essere completato o che non siano uscite pubblicazioni in quella data specifica.</p>
                 </div>
             <?php endif; ?>
 
@@ -127,6 +127,26 @@ require_once 'includes/header.php';
 </div>
 
 <?php
+// Funzione per formattare correttamente la data
+function format_publication_date($date) {
+    if (empty($date)) return '';
+    
+    $months = [
+        '01' => 'gennaio', '02' => 'febbraio', '03' => 'marzo', '04' => 'aprile',
+        '05' => 'maggio', '06' => 'giugno', '07' => 'luglio', '08' => 'agosto',
+        '09' => 'settembre', '10' => 'ottobre', '11' => 'novembre', '12' => 'dicembre'
+    ];
+    
+    $date_obj = date_create($date);
+    if (!$date_obj) return $date;
+    
+    $day = $date_obj->format('j');
+    $month = $months[$date_obj->format('m')];
+    $year = $date_obj->format('Y');
+    
+    return "$day $month $year";
+}
+
 $mysqli->close();
 require_once 'includes/footer.php';
 ?>

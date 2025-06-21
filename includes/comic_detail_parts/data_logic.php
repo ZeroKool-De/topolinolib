@@ -125,8 +125,8 @@ if ($stmt_next) {
     $stmt_next->close(); 
 }
 
-// --- INIZIO BLOCCO MODIFICATO ---
-// SEPARAZIONE STAFF E RECUPERO COPERTINISTI VARIANT
+// --- INIZIO BLOCCO MODIFICATO - CORREZIONE COPERTINISTI ---
+// SEPARAZIONE STAFF E RECUPERO COPERTINISTI
 $all_comic_persons_data = [];
 $stmt_cp = $mysqli->prepare("SELECT p.person_id, p.name, p.slug, cp.role FROM comic_persons cp JOIN persons p ON cp.person_id = p.person_id WHERE cp.comic_id = ? ORDER BY FIELD(cp.role, 'Direttore Responsabile', 'Direttore Editoriale', 'Direttore', 'Copertinista'), cp.role, p.name");
 $stmt_cp->bind_param("i", $comic_id);
@@ -144,30 +144,27 @@ $other_staff_list = [];
 $director_role_keywords = ['Direttore', 'Direttore Responsabile', 'Direttore Editoriale'];
 foreach ($all_comic_persons_data as $person_role) {
     $is_director_role = false;
-    foreach ($director_role_keywords as $keyword) { if (strcasecmp(trim($person_role['role']), trim($keyword)) == 0) { $is_director_role = true; break; } }
-    if ($is_director_role) { $directors_list[] = $person_role; } 
-    elseif (strcasecmp(trim($person_role['role']), 'Copertinista') == 0) { $cover_artists_list[] = $person_role; } 
-    else { $other_staff_list[] = $person_role; }
+    foreach ($director_role_keywords as $keyword) { 
+        if (strcasecmp(trim($person_role['role']), trim($keyword)) == 0) { 
+            $is_director_role = true; 
+            break; 
+        } 
+    }
+    if ($is_director_role) { 
+        $directors_list[] = $person_role; 
+    } 
+    elseif (strcasecmp(trim($person_role['role']), 'Copertinista') == 0) { 
+        // CORREZIONE: Qui va la logica per distinguere il tipo di copertina
+        // Per ora aggiungiamo alla copertina principale, ma questo potrebbe essere migliorato
+        // se il database ha una distinzione specifica per tipo di copertina
+        $cover_artists_list[] = $person_role; 
+    } 
+    else { 
+        $other_staff_list[] = $person_role; 
+    }
 }
 
-// QUERY PER GLI ARTISTI DELLE VARIANT COVER
-$variant_cover_artists_list = [];
-$stmt_vc_artists = $mysqli->prepare("
-    SELECT DISTINCT p.person_id, p.name, p.slug
-    FROM comic_variant_covers cvc
-    JOIN persons p ON cvc.artist_id = p.person_id
-    WHERE cvc.comic_id = ? AND cvc.artist_id IS NOT NULL
-    ORDER BY p.name
-");
-$stmt_vc_artists->bind_param("i", $comic_id);
-$stmt_vc_artists->execute();
-$result_vc_artists = $stmt_vc_artists->get_result();
-while ($vc_artist_row = $result_vc_artists->fetch_assoc()) {
-    $variant_cover_artists_list[] = $vc_artist_row;
-}
-$stmt_vc_artists->close();
-
-// RECUPERO RETROCOPERTINISTI (dalla tabella comics)
+// RECUPERO RETROCOPERTINISTI (dalla tabella comics) - SEPARATO E CORRETTO
 $back_cover_artists_list = [];
 if (!empty($comic['back_cover_image'])) {
     // Controlla prima se c'è un retrocopertinista singolo
@@ -204,6 +201,42 @@ if (!empty($comic['back_cover_image'])) {
             }
         }
     }
+    
+    // CORREZIONE IMPORTANTE: Se il retrocopertinista è vuoto e c'è una retrocopertina,
+    // significa che è lo stesso della copertina principale
+    // In questo caso NON aggiungiamo gli autori della copertina al back_cover_artists_list
+    // Il template gestirà la visualizzazione con "Stesso autore della copertina"
+}
+
+// QUERY PER GLI ARTISTI DELLE VARIANT COVER - SEPARATO
+$variant_cover_artists_list = [];
+$stmt_vc_artists = $mysqli->prepare("
+    SELECT DISTINCT p.person_id, p.name, p.slug
+    FROM comic_variant_covers cvc
+    JOIN persons p ON cvc.artist_id = p.person_id
+    WHERE cvc.comic_id = ? AND cvc.artist_id IS NOT NULL
+    ORDER BY p.name
+");
+$stmt_vc_artists->bind_param("i", $comic_id);
+$stmt_vc_artists->execute();
+$result_vc_artists = $stmt_vc_artists->get_result();
+while ($vc_artist_row = $result_vc_artists->fetch_assoc()) {
+    $variant_cover_artists_list[] = $vc_artist_row;
+}
+$stmt_vc_artists->close();
+
+// CORREZIONE FINALE: Rimuovere dalla cover_artists_list gli autori che sono già nelle variant o retrocopertine
+// solo se il database li distingue correttamente
+// Questa è una soluzione temporanea - idealmente il database dovrebbe avere ruoli specifici come:
+// "Copertinista Principale", "Retrocopertinista", "Copertinista Variant"
+
+// Se la retrocopertina ha gli stessi autori della copertina principale,
+// rimuoviamo i duplicati dalla cover_artists_list per evitare confusione
+if (!empty($back_cover_artists_list) && !empty($cover_artists_list)) {
+    $back_cover_ids = array_column($back_cover_artists_list, 'person_id');
+    $cover_artists_list = array_filter($cover_artists_list, function($artist) use ($back_cover_ids) {
+        return !in_array($artist['person_id'], $back_cover_ids);
+    });
 }
 // --- FINE BLOCCO MODIFICATO ---
 
